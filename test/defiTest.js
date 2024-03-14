@@ -76,5 +76,19 @@ describe("DefiTest", function () {
     })
   })
 
+  describe("Test Reward Calculation", function () {
+    it("Should calculate reward", async function () {
+      const { token, defi, owner, otherAccount, ONE_DAY_IN_SECS } = await loadFixture(deployTestFixture);
+      await token.connect(owner).transfer(otherAccount.getAddress(), ethers.parseEther("1000"));
+      await token.connect(owner).transfer(defi.getAddress(), ethers.parseEther("1000000"));
+      await token.connect(otherAccount).approve(defi.getAddress(), ethers.parseEther("1000"));
+      await defi.connect(otherAccount).stake(ethers.parseEther("1000"));
+      expect(await defi.getUserBalance(otherAccount.getAddress())).to.equal(ethers.parseEther("1000"));
+      await network.provider.send("evm_increaseTime", [ONE_DAY_IN_SECS]); // Increase by 1 day
+      await network.provider.send("evm_mine");
+      expect(await defi.getReward(otherAccount.getAddress())).to.equal(ethers.parseEther("1"));
+    })
+  })
+
 
 });
