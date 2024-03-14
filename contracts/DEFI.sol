@@ -15,7 +15,7 @@ contract DEFIStaking {
 
     struct Position {
         uint256 amount;
-        uint256 lastRewardTime;
+        uint256 updatedRewardTime;
         uint256 rewardDebt;
     }
 
@@ -40,7 +40,7 @@ contract DEFIStaking {
         updateRewards(msg.sender);
 
         positions[msg.sender].amount += _amount;
-        positions[msg.sender].lastRewardTime = block.timestamp;
+        positions[msg.sender].updatedRewardTime = block.timestamp;
         defiToken.safeTransferFrom(msg.sender, address(this), _amount);
 
         emit Staked(msg.sender, _amount);
@@ -59,6 +59,11 @@ contract DEFIStaking {
         userStake.amount = 0;
         userStake.rewardDebt = 0;
 
+        // Ensure the contract has enough tokens to transfer
+        uint256 contractBalance = defiToken.balanceOf(address(this));
+        require(amountToTransfer <= contractBalance, "Insufficient balance in contract");
+
+
         defiToken.safeTransfer(msg.sender, amountToTransfer);
 
         emit Withdrawn(msg.sender, amountToTransfer);
@@ -73,7 +78,7 @@ contract DEFIStaking {
         if (userStake.amount > 0) {
             uint256 reward = getReward(_user);
             userStake.rewardDebt += reward;
-            userStake.lastRewardTime = block.timestamp;
+            userStake.updatedRewardTime = block.timestamp;
 
             emit RewardUpdated(_user, reward);
         }
@@ -87,7 +92,7 @@ contract DEFIStaking {
     function getReward(address _user) public view returns (uint256) {
         Position memory userStake = positions[_user];
         if (userStake.amount == 0) return 0;
-        uint256 secondsStaked = block.timestamp - userStake.lastRewardTime;
+        uint256 secondsStaked = block.timestamp - userStake.updatedRewardTime;
         uint256 reward = (secondsStaked * REWARDS_PER_SECOND * userStake.amount) / 1000e18;
         return userStake.rewardDebt + reward;
     }
