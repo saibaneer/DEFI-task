@@ -63,6 +63,10 @@ contract DEFIStaking {
         updateRewards(msg.sender);
 
         uint256 amountToTransfer = userStake.amount + userStake.rewardDebt;
+        // Ensure the contract has enough tokens to transfer
+        uint256 contractBalance = defiToken.balanceOf(address(this));
+        require(amountToTransfer <= contractBalance, "Insufficient balance in contract");
+
         delete positions[msg.sender];
         defiToken.safeTransfer(msg.sender, amountToTransfer);
         emit Withdrew(msg.sender, amountToTransfer);

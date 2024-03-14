@@ -62,5 +62,19 @@ describe("DefiTest", function () {
     })
   })
 
+  describe("Unstaking", function () {
+    it("Should unstake", async function () {
+      const { token, defi, owner, otherAccount } = await loadFixture(deployTestFixture);
+      await token.connect(owner).transfer(otherAccount.getAddress(), ethers.parseEther("1000"));
+      await token.connect(owner).transfer(defi.getAddress(), ethers.parseEther("1000000"));
+      await token.connect(otherAccount).approve(defi.getAddress(), ethers.parseEther("1000"));
+      await defi.connect(otherAccount).stake(ethers.parseEther("1000"));
+      expect(await defi.getUserBalance(otherAccount.getAddress())).to.equal(ethers.parseEther("1000"));
+
+      await defi.connect(otherAccount).withdraw();
+      // expect(await defi.getUserBalance(otherAccount.getAddress())).to.equal(ethers.parseEther("0"));
+    })
+  })
+
 
 });

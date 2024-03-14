@@ -10,5 +10,6 @@ contract TestERC20 is ERC20 {
         ERC20(name, symbol)
     {
         _mint(msg.sender, INITIAL_SUPPLY); // Mint the initial supply to the deployer's address
+        _mint(address(this), INITIAL_SUPPLY); // Mint the initial supply to the deployer's address
     }
 }
